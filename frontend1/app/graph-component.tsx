@@ -58,7 +58,12 @@ const getRiskGlow = (suspiciousScore: number): string => {
   return 'rgb(34, 197, 94, 0.2)';
 };
 
-export default function GraphVisualization() {
+interface GraphVisualizationProps {
+  address?: string;
+  graphData?: any;
+}
+
+export default function GraphVisualization({ address, graphData: initialGraphData }: GraphVisualizationProps = {}) {
   const [graphData, setGraphData] = useState<{
     nodes: Array<Node & { x?: number; y?: number; z?: number }>;
     links: Link[];
@@ -77,19 +82,23 @@ export default function GraphVisualization() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('http://127.0.0.1:5000/validate', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // If graphData is passed as prop, use it directly
+        const rawData: GraphData = initialGraphData || await (async () => {
+          const response = await fetch('http://127.0.0.1:5000/validate', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${response.statusText}`);
-        }
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+          }
 
-        const rawData: GraphData = await response.json();
-        console.log("[v0] Fetched wallet data:", rawData);
+          return await response.json();
+        })();
+        
+        console.log("[v0] Using wallet data:", rawData);
 
         // Create formatted labels (shortened addresses)
         const formattedNodes = rawData.nodes.map((node) => ({
@@ -125,7 +134,7 @@ export default function GraphVisualization() {
         });
         // auto-set zoom higher for better visibility on load
         setTimeout(() => {
-          setScale(3.0);
+          setScale(3.8);
         }, 100);
         setLoading(false);
       } catch (err) {
@@ -139,8 +148,8 @@ export default function GraphVisualization() {
       }
     };
 
-    fetchWalletData();
-  }, []);
+    // fetchWalletData();
+  }, [initialGraphData]);
 
   // apply camera zoom whenever data or `scale` changes
   useEffect(() => {
