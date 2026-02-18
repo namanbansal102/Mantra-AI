@@ -2,6 +2,8 @@
 
 import { Loading } from '@/components/ui/circle-unique-load';
 import dynamic from 'next/dynamic';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 // @ts-ignore - no types for three-spritetext in this project
 import SpriteText from 'three-spritetext';
@@ -10,7 +12,7 @@ import SpriteText from 'three-spritetext';
 const ForceGraph:any = dynamic(() => import('react-force-graph-3d'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-background flex items-center justify-center">
+    <div className="w-full h-screen bg-background flex items-center justify-center">
       <div className="text-foreground text-lg">Loading Graph...</div>
     </div>
   ),
@@ -58,12 +60,7 @@ const getRiskGlow = (suspiciousScore: number): string => {
   return 'rgb(34, 197, 94, 0.2)';
 };
 
-interface GraphVisualizationProps {
-  address?: string;
-  graphData?: any;
-}
-
-export default function GraphVisualization({ address, graphData: initialGraphData }: GraphVisualizationProps = {}) {
+export default function GraphVisualization({params}:any) {
   const [graphData, setGraphData] = useState<{
     nodes: Array<Node & { x?: number; y?: number; z?: number }>;
     links: Link[];
@@ -75,30 +72,38 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  // useSearchParams
+  const paramss:any = useParams();
+ 
   useEffect(() => {
+    // console.log("my query passed is::::::",router.query);
+    //  useParams
+    console.log("k isL:::::::::",paramss);
+    
     const fetchWalletData = async () => {
       try {
+        
         setLoading(true);
         setError(null);
         
-        // If graphData is passed as prop, use it directly
-        const rawData: GraphData = initialGraphData || await (async () => {
-          const response = await fetch('http://127.0.0.1:5000/validate', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
+        const response = await fetch('http://127.0.0.1:5000/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
 
-          if (!response.ok) {
-            throw new Error(`API error: ${response.status} ${response.statusText}`);
-          }
+          },
+          body:JSON.stringify({
+            "address":paramss.address
+          })
 
-          return await response.json();
-        })();
-        
-        console.log("[v0] Using wallet data:", rawData);
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const rawData: GraphData = await response.json();
+        console.log("[v0] Fetched wallet data:", rawData);
 
         // Create formatted labels (shortened addresses)
         const formattedNodes = rawData.nodes.map((node) => ({
@@ -134,7 +139,7 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
         });
         // auto-set zoom higher for better visibility on load
         setTimeout(() => {
-          setScale(3.8);
+          setScale(3.0);
         }, 100);
         setLoading(false);
       } catch (err) {
@@ -148,10 +153,8 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
       }
     };
 
-    if (initialGraphData || !address) {
-      fetchWalletData();
-    }
-  }, [initialGraphData, address]);
+    fetchWalletData();
+  }, []);
 
   // apply camera zoom whenever data or `scale` changes
   useEffect(() => {
@@ -206,7 +209,7 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
 
   if (loading) {
     return (
-      <div className="w-full h-full bg-background flex items-center justify-center">
+      <div className="w-full h-screen bg-background flex items-center justify-center">
        <Loading></Loading>
       </div>
     );
@@ -214,7 +217,7 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
 
   if (error) {
     return (
-      <div className="w-full h-full bg-background flex items-center justify-center">
+      <div className="w-full h-screen bg-background flex items-center justify-center">
         <div className="max-w-md text-center">
           <div className="text-destructive text-lg mb-4">Error Loading Data</div>
           <div className="text-muted-foreground text-sm mb-4">{error}</div>
@@ -229,14 +232,14 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
 
   if (!graphData) {
     return (
-      <div className="w-full h-full bg-background flex items-center justify-center">
+      <div className="w-full h-screen bg-background flex items-center justify-center">
         <div className="text-foreground text-lg">No data available</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-background">
+    <div className="w-full h-screen relative overflow-hidden bg-background">
       <ForceGraph
         ref={fgRef}
         graphData={graphData}
@@ -287,8 +290,8 @@ export default function GraphVisualization({ address, graphData: initialGraphDat
         onNodeClick={(node: any) => {
           // Can add click handling here
         }}
-        width={typeof window !== 'undefined' && address ? window.innerWidth * 0.9 : 1200}
-        height={typeof window !== 'undefined' && address ? 800 : 800}
+        width={typeof window !== 'undefined' ? window.innerWidth : 800}
+        height={typeof window !== 'undefined' ? window.innerHeight : 600}
         backgroundColor="#0a0a0a"
         showNavInfo={true}
       />

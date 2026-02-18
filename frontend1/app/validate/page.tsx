@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, useMotionValue, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
+import Link from 'next/link';
 
 // Dynamically import the graph component
 const GraphVisualization = dynamic(() => import('../graph-component'), {
@@ -326,28 +327,21 @@ export default function RiskAssessment() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-y-auto">
+    <div className="min-h-screen bg-background text-foreground overflow-y-auto mt-20">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border p-4"
+        className="sticky"
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Risk Analysis</h1>
-            <p className="text-sm text-muted-foreground font-mono">{riskData.address}</p>
-          </div>
-          <button
-            onClick={() => {
-              setRiskData(null);
-              setAddress('');
-              setError(null);
-            }}
+
+          <Link
+          href={`/graph/${address}`}
             className="px-4 py-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors"
           >
-            New Analysis
-          </button>
+            Go To Risk Graph
+          </Link>
         </div>
       </motion.div>
 
@@ -404,17 +398,7 @@ export default function RiskAssessment() {
         </motion.div>
 
         {/* Graph Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-16"
-        >
-          <h2 className="text-2xl font-bold text-foreground mb-6">Network Graph</h2>
-          <div className="border border-border rounded-lg overflow-hidden bg-card/30">
-            <GraphVisualization graphData={riskData} address={riskData.address} />
-          </div>
-        </motion.div>
+      
       </div>
     </div>
   );
