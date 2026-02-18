@@ -93,7 +93,7 @@ export default function GraphVisualization({params}:any) {
 
           },
           body:JSON.stringify({
-            "address":paramss.address
+            "wallet":paramss.address
           })
 
         });

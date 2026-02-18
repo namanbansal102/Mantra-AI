@@ -229,6 +229,10 @@ export default function RiskAssessment() {
         headers: {
           'Content-Type': 'application/json',
         },
+         body:JSON.stringify({
+            "wallet":address
+          })
+
       });
 
       if (!response.ok) {
@@ -314,7 +318,7 @@ export default function RiskAssessment() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent text-foreground font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
+                  className="mx-56 px-6 py-3 bg-gradient-to-r from-primary to-accent text-foreground font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all duration-300 transform hover:scale-105 border-2 border-white"
                 >
                   {loading ? 'Analyzing...' : 'Analyze Wallet'}
                 </button>
