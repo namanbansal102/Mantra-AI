@@ -86,7 +86,7 @@ export default function GraphVisualization({params}:any) {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/validate`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/validate_BSC`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
